@@ -1,0 +1,503 @@
+<!doctype html>
+<html lang="vi">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Tin nhắn</title>
+    <style>
+      :root {
+        --bg1: #ff9a9e;
+        --bg2: #fad0c4;
+        --card: #fff;
+        --accent: #ff6b81;
+      }
+      * {
+        box-sizing: border-box;
+      }
+      html,
+      body {
+        height: 100%;
+      }
+      body {
+        margin: 0;
+        font-family: "Segoe UI", Roboto, "Helvetica Neue", Arial;
+        background: linear-gradient(135deg, var(--bg1), var(--bg2));
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 24px;
+        overflow: hidden;
+        transition:
+          filter 0.25s ease,
+          opacity 0.25s ease;
+      }
+
+      /* locked state: hide page content visually and block interactions */
+      body.locked {
+        filter: blur(6px) brightness(0.8);
+        pointer-events: none;
+        user-select: none;
+      }
+
+      .card {
+        width: 100%;
+        max-width: 760px;
+        background: linear-gradient(
+          180deg,
+          rgba(255, 255, 255, 0.95),
+          rgba(255, 255, 255, 0.9)
+        );
+        border-radius: 18px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.12);
+        padding: 28px;
+        position: relative;
+        text-align: center;
+      }
+      /* canvas mosaic heart inside card */
+      /* 3D rotating cube for 6 photos */
+      .cube-scene {
+        width: 100%;
+        height: 180px;
+        margin: 12px 0;
+        perspective: 1200px;
+        position: relative;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+      .cube {
+        --cube-size: 110px; /* giảm 1/2 */
+        width: var(--cube-size);
+        height: var(--cube-size);
+        transform-style: preserve-3d;
+        /* no translateZ here so faces positioned by their own translateZ */
+        transform: none;
+        animation: cube-spin 12s linear infinite;
+      }
+      .cube.paused {
+        animation-play-state: paused;
+      }
+      .cube__face {
+        position: absolute;
+        width: 100%;
+        height: 100%;
+        border-radius: 12px;
+        overflow: hidden;
+        backface-visibility: hidden;
+        background-size: cover;
+        background-position: center;
+        box-shadow: 0 12px 30px rgba(0, 0, 0, 0.28);
+      }
+      /* place 6 faces around Y axis (every 60deg) so all 6 rotate similarly */
+      /* increase translateZ a bit to avoid overlap */
+      .face1 {
+        transform: rotateY(0deg) translateZ(calc(var(--cube-size) * 0.6));
+      }
+      .face2 {
+        transform: rotateY(60deg) translateZ(calc(var(--cube-size) * 0.6));
+      }
+      .face3 {
+        transform: rotateY(120deg) translateZ(calc(var(--cube-size) * 0.6));
+      }
+      .face4 {
+        transform: rotateY(180deg) translateZ(calc(var(--cube-size) * 0.6));
+      }
+      .face5 {
+        transform: rotateY(240deg) translateZ(calc(var(--cube-size) * 0.6));
+      }
+      .face6 {
+        transform: rotateY(300deg) translateZ(calc(var(--cube-size) * 0.6));
+      }
+
+      @keyframes cube-spin {
+        from {
+          transform: rotateY(0deg);
+        }
+        to {
+          transform: rotateY(360deg);
+        }
+      }
+      @media (max-width: 520px) {
+        .cube {
+          --cube-size: 80px; /* giảm 1/2 */
+        }
+      }
+
+      h1 {
+        margin: 0 0 8px;
+        color: var(--accent);
+        font-size: 28px;
+      }
+      p.lead {
+        margin: 0 0 18px;
+        color: #444;
+      }
+      .btn {
+        display: inline-block;
+        background: var(--accent);
+        color: #fff;
+        border: none;
+        padding: 12px 18px;
+        border-radius: 12px;
+        cursor: pointer;
+        font-weight: 600;
+        box-shadow: 0 6px 18px rgba(255, 107, 129, 0.28);
+        transition: transform 0.12s ease;
+        text-decoration: none;
+      }
+      .btn:active {
+        transform: translateY(2px);
+      }
+      .message {
+        margin-top: 18px;
+        min-height: 120px;
+        padding: 18px;
+        border-radius: 12px;
+        background: linear-gradient(
+          180deg,
+          rgba(255, 250, 250, 0.9),
+          rgba(255, 245, 245, 0.8)
+        );
+        color: #333;
+        text-align: left;
+        font-size: 18px;
+        line-height: 1.5;
+        overflow: hidden;
+        white-space: pre-wrap;
+        transition: all 0.3s ease;
+      }
+      .hidden {
+        max-height: 0;
+        padding: 0 18px;
+        opacity: 0;
+      }
+      .visible {
+        max-height: 400px;
+        padding: 18px;
+        opacity: 1;
+      }
+      .footer {
+        margin-top: 14px;
+        color: #666;
+        font-size: 13px;
+      }
+      /* floating hearts */
+      .hearts {
+        pointer-events: none;
+        position: fixed;
+        inset: 0;
+        z-index: 0;
+        overflow: hidden;
+      }
+      .heart {
+        position: absolute;
+        width: 26px;
+        height: 26px;
+        transform: translate(-50%, -50%) scale(0.9);
+        opacity: 0.95;
+        animation: floatUp linear infinite;
+      }
+      .heart:before,
+      .heart:after {
+        content: "";
+        position: absolute;
+        width: 13px;
+        height: 20px;
+        background: var(--accent);
+        border-radius: 13px 13px 0 0;
+        transform-origin: center bottom;
+      }
+      .heart:before {
+        left: 6px;
+        transform: rotate(-45deg);
+      }
+      .heart:after {
+        left: 0;
+        transform: rotate(45deg);
+      }
+      @keyframes floatUp {
+        0% {
+          transform: translate(var(--x), 100vh) scale(var(--s));
+          opacity: 0;
+        }
+        10% {
+          opacity: 1;
+        }
+        100% {
+          transform: translate(var(--x), -20vh) scale(var(--s));
+          opacity: 0;
+        }
+      }
+      /* small responsive tweaks */
+      @media (max-width: 520px) {
+        .card {
+          padding: 20px;
+          border-radius: 14px;
+        }
+        h1 {
+          font-size: 22px;
+        }
+        .message {
+          font-size: 16px;
+        }
+      }
+
+      /* overlay shown while locked (on top of blurred page) */
+      #lock {
+        position: fixed;
+        inset: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 9999;
+        background: linear-gradient(
+          180deg,
+          rgba(0, 0, 0, 0.45),
+          rgba(0, 0, 0, 0.35)
+        );
+      }
+      .lock-box {
+        background: #fff;
+        padding: 22px;
+        border-radius: 12px;
+        text-align: center;
+        width: min(420px, 92%);
+        box-shadow: 0 12px 40px rgba(0, 0, 0, 0.35);
+      }
+      .lock-box h2 {
+        margin: 0 0 8px;
+        color: var(--accent);
+      }
+      .lock-box p {
+        margin: 0 0 14px;
+        color: #333;
+      }
+      .lock-box .try-btn {
+        background: var(--accent);
+        color: #fff;
+        border: none;
+        padding: 10px 14px;
+        border-radius: 10px;
+        font-weight: 600;
+        cursor: pointer;
+      }
+    </style>
+  </head>
+  <body>
+    <!-- lock overlay (visible while page locked) -->
+    <div id="lock" aria-hidden="false">
+      <div class="lock-box" role="dialog" aria-label="Yêu cầu tên">
+        <h2>Trang đã được khóa</h2>
+        <p>Nhập đúng tên để mở trang. (Nhập "Ánh")</p>
+        <button id="tryBtn" class="try-btn">Nhập tên</button>
+      </div>
+    </div>
+
+    <div class="card" role="main" aria-label="Tin nhắn dành cho em Ánh">
+      <h1>Tin nhắn gửi em Ánh</h1>
+      <p class="lead">Nhấn nút bên dưới để đọc tin nhắn này.</p>
+
+      <!-- 3D cube hiển thị 6 ảnh -->
+      <div class="cube-scene" aria-hidden="true">
+        <div class="cube" id="photoCube" aria-hidden="true" tabindex="-1">
+          <div class="cube__face face1"></div>
+          <div class="cube__face face2"></div>
+          <div class="cube__face face3"></div>
+          <div class="cube__face face4"></div>
+          <div class="cube__face face5"></div>
+          <div class="cube__face face6"></div>
+        </div>
+      </div>
+
+      <button
+        id="revealBtn"
+        class="btn"
+        aria-controls="message"
+        aria-expanded="false"
+      >
+        Nhấn để xem tin nhắn
+      </button>
+
+      <div
+        id="message"
+        class="message hidden"
+        role="region"
+        aria-live="polite"
+      ></div>
+
+      <div class="footer">Gửi từ: =))</div>
+    </div>
+
+    <div class="hearts" id="hearts"></div>
+
+    <script>
+      // lock page on load
+      document.body.classList.add("locked");
+
+      function askNamePrompt() {
+        // use window.prompt as requested — handle Cancel (null) safely
+        const raw = window.prompt("Nhập tên để mở trang:");
+        if (raw === null || raw === undefined) return false;
+        const answer = raw.trim();
+        // accept 'Ánh' case-insensitive (so 'ánh' also works)
+        if (answer.toLowerCase() === "ánh") {
+          // unlock
+          document.body.classList.remove("locked");
+          const lockEl = document.getElementById("lock");
+          if (lockEl) lockEl.style.display = "none";
+          return true;
+        } else {
+          alert("Sai tên. Vui lòng thử lại.");
+          return false;
+        }
+      }
+
+      // wire the overlay button to re-open prompt
+      document.getElementById("tryBtn").addEventListener("click", () => {
+        const ok = askNamePrompt();
+        // if unlocked, focus the reveal button
+        if (ok) {
+          const btn = document.getElementById("revealBtn");
+          if (btn) btn.focus();
+        }
+      });
+
+      // immediately ask once on load
+      window.addEventListener("DOMContentLoaded", () => {
+        // loop prompt until correct or user cancels the prompt dialog flow
+        // stop if prompt returns null (user pressed Cancel) to avoid infinite loop
+        let result = false;
+        // call once; if wrong allow retry via overlay button
+        try {
+          const resp = window.prompt("Vui lòng nhập đúng tên bạn để mở trang:");
+          if (
+            resp !== null &&
+            resp !== undefined &&
+            resp.trim().toLowerCase() === "ánh"
+          ) {
+            result = true;
+          } else if (resp !== null) {
+            alert('Sai tên. Bạn có thể thử lại bằng nút "Nhập tên".');
+          }
+        } catch (e) {
+          // ignore
+        }
+        if (result) {
+          document.body.classList.remove("locked");
+          const lockEl = document.getElementById("lock");
+          if (lockEl) lockEl.style.display = "none";
+        }
+      });
+
+      const name = "Ánh";
+      const fullText = `
+ Trên thiên đường có 10 thiên thần: 5 thiên thần đang chơi đùa,
+ 4 thiên thần đang nói chuyện và 1 thiên thần đang đọc tin nhắn này…
+ Đó chính là em đấy :))
+ Chúc em 14/02 vui vẻ và nhận được nhiều điều ngọt ngào hôm nay!
+`;
+
+      const btn = document.getElementById("revealBtn");
+      const message = document.getElementById("message");
+
+      let typing = false;
+      function typeText(text, el, delay = 30) {
+        el.textContent = "";
+        let i = 0;
+        typing = true;
+        const t = setInterval(() => {
+          el.textContent += text[i++] || "";
+          if (i >= text.length) {
+            clearInterval(t);
+            typing = false;
+          }
+        }, delay);
+      }
+
+      btn.addEventListener("click", () => {
+        // do nothing while locked
+        if (document.body.classList.contains("locked")) return;
+
+        const expanded = btn.getAttribute("aria-expanded") === "true";
+        if (typing) return;
+        if (!expanded) {
+          btn.setAttribute("aria-expanded", "true");
+          message.classList.remove("hidden");
+          message.classList.add("visible");
+          typeText(fullText, message, 28);
+          createHearts(18);
+        } else {
+          btn.setAttribute("aria-expanded", "false");
+          message.classList.remove("visible");
+          message.classList.add("hidden");
+          message.textContent = "";
+        }
+      });
+
+      // create animated hearts
+      function createHearts(count = 12) {
+        const container = document.getElementById("hearts");
+        container.innerHTML = "";
+        for (let i = 0; i < count; i++) {
+          const h = document.createElement("div");
+          h.className = "heart";
+          const left = Math.random() * 100;
+          const scale = Math.random() * 0.8 + 0.6;
+          const duration = Math.random() * 6 + 6;
+          h.style.left = left + "vw";
+          h.style.setProperty("--x", left - 50 + "vw");
+          h.style.setProperty("--s", scale);
+          h.style.animationDuration = duration + "s";
+          h.style.top = 110 + Math.random() * 40 + "vh";
+          container.appendChild(h);
+          // stagger appearance slightly
+          h.style.animationDelay = Math.random() * 2 + "s";
+        }
+      }
+
+      // small keyboard shortcut: press A to toggle (only when unlocked)
+      window.addEventListener("keydown", (e) => {
+        if (document.body.classList.contains("locked")) return;
+        if (e.key.toLowerCase() === "a") btn.click();
+      });
+
+      // ----- setup 3D photo cube -----
+      (function () {
+        const cube = document.getElementById("photoCube");
+        if (!cube) return;
+        const faces = cube.querySelectorAll(".cube__face");
+        const imgPaths = [1, 2, 3, 4, 5, 6].map((n) => `img/${n}.jpg`);
+
+        // assign backgrounds
+        faces.forEach((f, i) => {
+          f.style.backgroundImage = `url('${imgPaths[i % imgPaths.length]}')`;
+        });
+
+        // responsive cube size based on scene
+        function updateSize() {
+          const scene = cube.parentElement;
+          const max = Math.min(scene.clientWidth * 0.8, 320);
+          // lấy nửa kích thước để hiển thị nhỏ hơn
+          const size = Math.max(60, max / 2);
+          cube.style.setProperty("--cube-size", size + "px");
+          // keep translateZ consistent via CSS transforms
+        }
+        updateSize();
+        let t;
+        window.addEventListener("resize", () => {
+          clearTimeout(t);
+          t = setTimeout(updateSize, 120);
+        });
+
+        // pause rotation on hover / focus
+        cube.addEventListener("mouseenter", () => cube.classList.add("paused"));
+        cube.addEventListener("mouseleave", () =>
+          cube.classList.remove("paused"),
+        );
+        cube.addEventListener("focus", () => cube.classList.add("paused"));
+        cube.addEventListener("blur", () => cube.classList.remove("paused"));
+      })();
+      // ----- end photo cube -----
+    </script>
+  </body>
+</html>

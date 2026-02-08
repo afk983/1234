@@ -1,0 +1,44 @@
+body {
+    background-color: #f0e5e5;
+    font-family: 'Arial', sans-serif;
+    color: #333;
+    margin: 0;
+    padding: 20px;
+}
+
+h1 {
+    text-align: center;
+    color: #e63946;
+}
+
+h2 {
+    text-align: center;
+    color: #f1faee;
+}
+
+.message {
+    max-width: 600px;
+    margin: 20px auto;
+    padding: 20px;
+    background-color: #a8dadc;
+    border-radius: 10px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+}
+
+.image-container {
+    text-align: center;
+    margin: 20px 0;
+}
+
+.image-container img {
+    max-width: 100%;
+    height: auto;
+    border-radius: 10px;
+}
+
+.footer {
+    text-align: center;
+    margin-top: 40px;
+    font-size: 0.9em;
+    color: #457b9d;
+}
