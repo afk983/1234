@@ -284,6 +284,9 @@
     </style>
   </head>
   <body>
+    <audio autoplay>
+      <source src="../music/nen.mp3" type="audio/wav" />
+    </audio>
     <!-- lock overlay (visible while page locked) -->
     <div id="lock" aria-hidden="false">
       <div class="lock-box" role="dialog" aria-label="Yêu cầu tên">
@@ -325,7 +328,7 @@
         aria-live="polite"
       ></div>
 
-      <div class="footer">Gửi từ: =))</div>
+      <div class="footer">Gửi từ: Thang20 &copy; <3</div>
     </div>
 
     <div class="hearts" id="hearts"></div>
@@ -424,7 +427,7 @@
           btn.setAttribute("aria-expanded", "true");
           message.classList.remove("hidden");
           message.classList.add("visible");
-          typeText(fullText, message, 28);
+          typeText(fullText, message, 100);
           createHearts(18);
         } else {
           btn.setAttribute("aria-expanded", "false");

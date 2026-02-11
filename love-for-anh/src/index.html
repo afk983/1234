@@ -1,29 +1,57 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Love for Ánh</title>
-    <link rel="stylesheet" href="css/styles.css">
-</head>
-<body>
+    <link rel="stylesheet" href="css/styles.css" />
+  </head>
+  <body>
     <header>
-        <h1>My Love for Ánh</h1>
+      <h1>My Love for Ánh</h1>
     </header>
     <main>
-        <section>
-            <h2>A Special Message</h2>
-            <p>Ánh, you light up my life in ways I never thought possible. Your smile brightens my darkest days, and your laughter is music to my ears. I cherish every moment we share together.</p>
-        </section>
-        <section>
-            <h2>Memories Together</h2>
-            <img src="path/to/your/image.jpg" alt="A beautiful memory with Ánh">
-            <p>Every memory we create is a treasure I hold dear. I look forward to making many more with you.</p>
-        </section>
+      <section>
+        <h2>A Special Message</h2>
+        <p>
+          Ánh, you light up my life in ways I never thought possible. Your smile
+          brightens my darkest days, and your laughter is music to my ears. I
+          cherish every moment we share together.
+        </p>
+      </section>
+      <section>
+        <h2>Memories Together</h2>
+        <img src="path/to/your/image.jpg" alt="A beautiful memory with Ánh" />
+        <p>
+          Every memory we create is a treasure I hold dear. I look forward to
+          making many more with you.
+        </p>
+      </section>
     </main>
     <footer>
-        <p>With all my love, forever and always.</p>
+      <p>With all my love, forever and always.</p>
     </footer>
+
+    <!-- Background Music -->
+    <div class="music-player">
+      <audio id="bgMusic" loop>
+        <source src="music/beautiful-in-white.mp3" type="audio/mpeg" />
+        Your browser does not support the audio element.
+      </audio>
+      <button id="toggleMusic" class="music-btn" title="Toggle Music">
+        🎵 Music: ON
+      </button>
+      <input
+        type="range"
+        id="volumeControl"
+        class="volume-slider"
+        min="0"
+        max="100"
+        value="50"
+        title="Volume Control"
+      />
+    </div>
+
     <script src="js/main.js"></script>
-</body>
+  </body>
 </html>
