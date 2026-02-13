@@ -148,6 +148,65 @@
       .btn:active {
         transform: translateY(2px);
       }
+      /* compact audio player */
+      .audio-wrap {
+        margin: 18px 0 6px;
+        display: flex;
+        justify-content: center;
+      }
+      .audio-player {
+        display: inline-flex;
+        align-items: center;
+        gap: 12px;
+        background: linear-gradient(
+          90deg,
+          rgba(255, 255, 255, 0.9),
+          rgba(255, 245, 245, 0.85)
+        );
+        padding: 8px 12px;
+        border-radius: 999px;
+        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
+      }
+      .audio-button {
+        width: 44px;
+        height: 44px;
+        border-radius: 50%;
+        border: none;
+        display: inline-grid;
+        place-items: center;
+        background: radial-gradient(circle at 30% 30%, var(--accent), #ff4b6b);
+        color: #fff;
+        cursor: pointer;
+        box-shadow: 0 6px 18px rgba(255, 107, 129, 0.22);
+      }
+      .audio-button:active {
+        transform: translateY(1px);
+      }
+      .audio-button .icon {
+        width: 16px;
+        height: 16px;
+        display: block;
+      }
+      .audio-button.playing {
+        box-shadow: 0 8px 26px rgba(255, 107, 129, 0.32);
+      }
+      .audio-title {
+        font-size: 14px;
+        color: #444;
+        max-width: 200px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+      /* visually hide the native audio element */
+      .visually-hidden {
+        position: absolute !important;
+        height: 1px;
+        width: 1px;
+        overflow: hidden;
+        clip: rect(1px, 1px, 1px, 1px);
+        white-space: nowrap;
+      }
       .message {
         margin-top: 18px;
         min-height: 120px;
@@ -284,8 +343,12 @@
     </style>
   </head>
   <body>
-    <audio autoplay>
-      <source src="../music/nen.mp3" type="audio/wav" />
+    <!-- Background Music (native element hidden; custom player shown below) -->
+    <audio id="bgAudio" loop preload="auto" class="visually-hidden">
+      <source
+        src="./music/Shane%20Filan%20-%20Beautiful%20In%20White%20%28Official%20Video%29%20-%20ShaneFilanVEVO.mp3"
+        type="audio/mpeg"
+      />
     </audio>
     <!-- lock overlay (visible while page locked) -->
     <div id="lock" aria-hidden="false">
@@ -297,7 +360,7 @@
     </div>
 
     <div class="card" role="main" aria-label="Tin nhắn dành cho em Ánh">
-      <h1>Tin nhắn gửi em Ánh</h1>
+      <h1>Tin nhắn từ vũ trụ :))</h1>
       <p class="lead">Nhấn nút bên dưới để đọc tin nhắn này.</p>
 
       <!-- 3D cube hiển thị 6 ảnh -->
@@ -309,6 +372,30 @@
           <div class="cube__face face4"></div>
           <div class="cube__face face5"></div>
           <div class="cube__face face6"></div>
+        </div>
+      </div>
+
+      <!-- compact audio player -->
+      <div class="audio-wrap">
+        <div class="audio-player" role="group" aria-label="Bộ điều khiển nhạc">
+          <button
+            id="audioBtn"
+            class="audio-button"
+            aria-pressed="false"
+            aria-label="Phát nhạc"
+          >
+            <span class="icon">
+              <svg
+                viewBox="0 0 24 24"
+                width="16"
+                height="16"
+                fill="currentColor"
+              >
+                <path d="M8 5v14l11-7z"></path>
+              </svg>
+            </span>
+          </button>
+          <div class="audio-title">Bài này dành cho em =))</div>
         </div>
       </div>
 
@@ -328,7 +415,7 @@
         aria-live="polite"
       ></div>
 
-      <div class="footer">Gửi từ: Thang20 &copy; <3</div>
+      <div class="footer">Gửi từ: Thang20 &copy; 14/02/2026</div>
     </div>
 
     <div class="hearts" id="hearts"></div>
@@ -348,6 +435,26 @@
           document.body.classList.remove("locked");
           const lockEl = document.getElementById("lock");
           if (lockEl) lockEl.style.display = "none";
+          // play music
+          const audio = document.getElementById("bgAudio");
+          if (audio) {
+            audio
+              .play()
+              .then(() => {
+                const btn = document.getElementById("audioBtn");
+                if (btn) {
+                  btn.classList.add("playing");
+                  btn.setAttribute("aria-pressed", "true");
+                  btn.setAttribute("aria-label", "Tạm dừng nhạc");
+                }
+              })
+              .catch((err) => {
+                console.error("Audio play error:", err);
+                alert(
+                  "Không thể phát nhạc. File có thể bị hỏng hoặc không tồn tại.",
+                );
+              });
+          }
           return true;
         } else {
           alert("Sai tên. Vui lòng thử lại.");
@@ -389,15 +496,71 @@
           document.body.classList.remove("locked");
           const lockEl = document.getElementById("lock");
           if (lockEl) lockEl.style.display = "none";
+          // play music
+          const audio = document.getElementById("bgAudio");
+          if (audio) {
+            audio
+              .play()
+              .then(() => {
+                const btn = document.getElementById("audioBtn");
+                if (btn) {
+                  btn.classList.add("playing");
+                  btn.setAttribute("aria-pressed", "true");
+                  btn.setAttribute("aria-label", "Tạm dừng nhạc");
+                }
+              })
+              .catch((err) => console.error("Audio play error:", err));
+          }
         }
       });
+
+      // custom audio button wiring
+      (function () {
+        const audio = document.getElementById("bgAudio");
+        const btn = document.getElementById("audioBtn");
+        if (!audio || !btn) return;
+
+        const playSVG =
+          '<svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><path d="M8 5v14l11-7z"></path></svg>';
+        const pauseSVG =
+          '<svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><path d="M6 5h4v14H6zM14 5h4v14h-4z"></path></svg>';
+
+        function updateButton() {
+          const icon = btn.querySelector(".icon");
+          if (audio.paused) {
+            btn.classList.remove("playing");
+            btn.setAttribute("aria-pressed", "false");
+            btn.setAttribute("aria-label", "Phát nhạc");
+            if (icon) icon.innerHTML = playSVG;
+          } else {
+            btn.classList.add("playing");
+            btn.setAttribute("aria-pressed", "true");
+            btn.setAttribute("aria-label", "Tạm dừng nhạc");
+            if (icon) icon.innerHTML = pauseSVG;
+          }
+        }
+
+        // initial state
+        updateButton();
+
+        btn.addEventListener("click", () => {
+          if (audio.paused) {
+            audio.play().catch((err) => console.error("Play failed", err));
+          } else {
+            audio.pause();
+          }
+        });
+
+        audio.addEventListener("play", updateButton);
+        audio.addEventListener("pause", updateButton);
+      })();
 
       const name = "Ánh";
       const fullText = `
  Trên thiên đường có 10 thiên thần: 5 thiên thần đang chơi đùa,
  4 thiên thần đang nói chuyện và 1 thiên thần đang đọc tin nhắn này…
  Đó chính là em đấy :))
- Chúc em 14/02 vui vẻ và nhận được nhiều điều ngọt ngào hôm nay!
+ Chúc em 14/02 vui vẻ và nhận được nhiều điều ngọt ngào, ấm áp hôm nay!
 `;
 
       const btn = document.getElementById("revealBtn");
