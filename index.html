@@ -148,6 +148,111 @@
       .btn:active {
         transform: translateY(2px);
       }
+      /* sparkle + shimmer for reveal button */
+      .btn {
+        position: relative;
+        overflow: hidden;
+        z-index: 1;
+      }
+      .btn::after {
+        content: "";
+        position: absolute;
+        top: -40%;
+        left: -50%;
+        width: 200%;
+        height: 180%;
+        background: linear-gradient(
+          120deg,
+          transparent 30%,
+          rgba(255, 255, 255, 0.75) 50%,
+          transparent 70%
+        );
+        transform: translateX(-120%) rotate(12deg);
+        filter: blur(6px);
+        opacity: 0.9;
+        pointer-events: none;
+        mix-blend-mode: screen;
+        animation: shimmer 2.2s linear infinite;
+      }
+      @keyframes shimmer {
+        to {
+          transform: translateX(120%) rotate(12deg);
+        }
+      }
+      .btn.sparkle {
+        animation: pulse 3.6s ease-in-out infinite;
+      }
+      @keyframes pulse {
+        0% {
+          box-shadow: 0 6px 18px rgba(255, 107, 129, 0.22);
+        }
+        50% {
+          box-shadow: 0 14px 34px rgba(255, 107, 129, 0.32);
+        }
+        100% {
+          box-shadow: 0 6px 18px rgba(255, 107, 129, 0.22);
+        }
+      }
+      /* animated tiny sparkles inside button */
+      .sparkles {
+        position: absolute;
+        inset: 0;
+        pointer-events: none;
+      }
+      .sparkles span {
+        position: absolute;
+        width: 6px;
+        height: 6px;
+        border-radius: 50%;
+        background: #fff;
+        opacity: 0;
+        transform: scale(0.6);
+        filter: drop-shadow(0 2px 6px rgba(255, 255, 255, 0.6));
+      }
+      .sparkles span:nth-child(1) {
+        left: 10%;
+        top: 18%;
+        animation: sparkle 3.2s 0.1s infinite;
+      }
+      .sparkles span:nth-child(2) {
+        left: 28%;
+        top: 8%;
+        animation: sparkle 3.4s 0.4s infinite;
+      }
+      .sparkles span:nth-child(3) {
+        left: 52%;
+        top: 22%;
+        animation: sparkle 3s 0.7s infinite;
+      }
+      .sparkles span:nth-child(4) {
+        left: 74%;
+        top: 12%;
+        animation: sparkle 3.6s 0.25s infinite;
+      }
+      .sparkles span:nth-child(5) {
+        left: 86%;
+        top: 30%;
+        animation: sparkle 3.1s 0.9s infinite;
+      }
+      .sparkles span:nth-child(6) {
+        left: 60%;
+        top: 54%;
+        animation: sparkle 4s 0.55s infinite;
+      }
+      @keyframes sparkle {
+        0% {
+          opacity: 0;
+          transform: scale(0.4) translateY(0);
+        }
+        40% {
+          opacity: 1;
+          transform: scale(1.05) translateY(-6px);
+        }
+        100% {
+          opacity: 0;
+          transform: scale(0.6) translateY(-14px);
+        }
+      }
       /* compact audio player */
       .audio-wrap {
         margin: 18px 0 6px;
@@ -401,11 +506,15 @@
 
       <button
         id="revealBtn"
-        class="btn"
+        class="btn sparkle"
         aria-controls="message"
         aria-expanded="false"
       >
         Nhấn để xem tin nhắn
+        <span class="sparkles" aria-hidden="true">
+          <span></span><span></span><span></span><span></span><span></span
+          ><span></span>
+        </span>
       </button>
 
       <div
